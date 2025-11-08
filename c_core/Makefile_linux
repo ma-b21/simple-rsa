@@ -1,0 +1,75 @@
+# ============ 基本设置 ============
+CC := gcc
+CFLAGS := -Wall -Wextra -Iinclude -O3 -march=native -fomit-frame-pointer -funroll-loops -flto -DNDEBUG
+SRC_DIR := src
+TEST_DIR := test
+BUILD_DIR := build
+
+# 是否启用 AddressSanitizer，可在命令行通过 ENABLE_ASAN=1 控制
+ifdef ENABLE_ASAN
+    CFLAGS += -fsanitize=address -g
+    LDFLAGS += -fsanitize=address
+    ASAN_MSG := "🔍 AddressSanitizer 已启用"
+else
+    LDFLAGS :=
+    ASAN_MSG := "🚀 AddressSanitizer 未启用（正常模式）"
+endif
+
+# ============ 文件路径 ============
+SRCS := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+
+TEST_RSA_SRC := $(TEST_DIR)/test_rsa.c
+TEST_RSA_OBJ := $(BUILD_DIR)/test_rsa.o
+TEST_RSA_TARGET := $(BUILD_DIR)/test_rsa
+
+TEST_PRIME_SRC := $(TEST_DIR)/test_prime.c
+TEST_PRIME_OBJ := $(BUILD_DIR)/test_prime.o
+TEST_PRIME_TARGET := $(BUILD_DIR)/test_prime
+
+# ============ 规则 ============
+.PHONY: all clean test test_prime test_rsa
+
+all: test test_prime
+
+test: $(TEST_RSA_TARGET)
+	@echo "✅ 构建完成：$(TEST_RSA_TARGET)"
+	@echo $(ASAN_MSG)
+	@echo "运行测试："
+	@./$(TEST_RSA_TARGET)
+
+test_prime: $(TEST_PRIME_TARGET)
+	@echo "✅ 构建完成：$(TEST_PRIME_TARGET)"
+	@echo $(ASAN_MSG)
+	@echo "运行素数测试："
+	@./$(TEST_PRIME_TARGET)
+
+test_rsa: $(TEST_RSA_TARGET)
+	@echo $(ASAN_MSG)
+	@echo "运行 RSA 测试："
+	@./$(TEST_RSA_TARGET)
+
+# ============ 编译规则 ============
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/test_rsa.o: $(TEST_RSA_SRC) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/test_prime.o: $(TEST_PRIME_SRC) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# ============ 链接规则 ============
+$(TEST_RSA_TARGET): $(OBJS) $(TEST_RSA_OBJ)
+	$(CC) $(OBJS) $(TEST_RSA_OBJ) -o $@ $(LDFLAGS)
+
+$(TEST_PRIME_TARGET): $(OBJS) $(TEST_PRIME_OBJ)
+	$(CC) $(OBJS) $(TEST_PRIME_OBJ) -o $@ $(LDFLAGS)
+
+# ============ 目录创建 ============
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# ============ 清理 ============
+clean:
+	rm -rf $(BUILD_DIR)
