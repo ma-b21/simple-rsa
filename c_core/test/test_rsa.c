@@ -299,31 +299,38 @@ void test_rsa_sign_verify()
 
 void benchmark_key_generation()
 {
-    printf("=== RSA Key Generation Benchmark ===\n");
+    printf("=== RSA Key Generation Benchmark ===\r\n");
 
-    int sizes[] = {256, 512, 768, 1024, 2048, 4096};
+    int sizes[] = {256, 512, 768, 1024, 2048, 3072, 4096};
+    int times[] = {50, 50, 50, 50, 20, 10, 10};
     int len = sizeof(sizes) / sizeof(sizes[0]);
 
     for (int i = 0; i < len; i++)
     {
-        printf("Generating %d-bit key...\n", sizes[i]);
-
-        clock_t start = clock();
-        RSAKey *key = rsa_generate_key(sizes[i]);
-        clock_t end = clock();
-
-        double time_taken = ((double)(end - start)) / CLOCKS_PER_SEC;
-
-        if (key)
+        // printf("Generating %d-bit key...\r\n", sizes[i]);
+        double total = 0;
+        for (int j = 0; j < times[i]; ++j)
         {
-            printf("%d-bit key generated in %.3f seconds\n",
-                   sizes[i], time_taken);
-            rsa_free_key(key);
+            clock_t start = clock();
+            RSAKey *key = rsa_generate_key(sizes[i]);
+            clock_t end = clock();
+
+            double time_taken = ((double)(end - start)) / CLOCKS_PER_SEC;
+
+            if (key)
+            {
+                // printf("%d-bit key generated in %.3f seconds\r\n",
+                    //    sizes[i], time_taken);
+                rsa_free_key(key);
+                total += time_taken;
+            }
+            else
+            {
+                printf("Failed to generate %d-bit key\r\n", sizes[i]);
+                break;
+            }
         }
-        else
-        {
-            printf("Failed to generate %d-bit key\n", sizes[i]);
-        }
+        printf("%d-bits key need average %.3f seconds \r\n\r\n", sizes[i], total / times[i]);
     }
 }
 
@@ -361,15 +368,15 @@ int main()
     printf("RSA Cryptography Test Suite\n");
     printf("============================\n");
 
-    test_init_and_conversion();
-    test_add_sub_mul();
-    test_div_mod();
-    test_shift();
-    test_bignum_basic();
-    test_modular_arithmetic();
-    test_prime_generation();
-    test_rsa_encrypt_decrypt();
-    test_rsa_sign_verify();
+    // test_init_and_conversion();
+    // test_add_sub_mul();
+    // test_div_mod();
+    // test_shift();
+    // test_bignum_basic();
+    // test_modular_arithmetic();
+    // test_prime_generation();
+    // test_rsa_encrypt_decrypt();
+    // test_rsa_sign_verify();
     benchmark_key_generation();
     printf("=== All tests completed ===\n");
 

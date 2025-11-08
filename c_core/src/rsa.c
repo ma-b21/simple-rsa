@@ -112,9 +112,9 @@ RSAKey *rsa_generate_key(int bits)
     bn_mod(key->dq, key->d, q_minus_1);        // dq = d mod (q-1)
     bn_mod_inverse(key->qinv, key->q, key->p); // qinv = q^-1 mod p
 
-    printf("Key generation complete!\r\n");
-    printf("  n: %d bits\r\n", bn_bit_length(key->n));
-    printf("  e: %llu\r\n", (unsigned long long)bn_to_uint64(key->e));
+    // printf("Key generation complete!\r\n");
+    // printf("  n: %d bits\r\n", bn_bit_length(key->n));
+    // printf("  e: %llu\r\n", (unsigned long long)bn_to_uint64(key->e));
 
     // 清理临时变量
     bn_free(one);
